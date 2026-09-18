@@ -2,7 +2,7 @@
 Unit tests for the News Agent.
 """
 
-from agents.planner import classify_task
+from models.planner_models import classify_task
 
 
 def test_news_routing():

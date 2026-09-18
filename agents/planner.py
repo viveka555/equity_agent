@@ -21,7 +21,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph
 
 from state import GraphState
-from config.setting import(
+from config.settings import(
     TASK_DCF,
     TASK_NEWS,
     TASK_RAG,

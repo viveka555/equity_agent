@@ -17,7 +17,7 @@ from langgraph.graph import START, END, StateGraph
 
 from state import GraphState
 
-from agents.planner import planner_node
+from models.planner_models import planner_node
 from agents.report import report_node
 from agents.news import news_node
 

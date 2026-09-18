@@ -2,7 +2,7 @@
 Unit tests for planner.py
 """
 
-from agents.planner import classify_task, extract_company
+from models.planner_models import classify_task, extract_company
 
 
 def test_extract_company():

@@ -1,0 +1,44 @@
+"""
+settings.py
+
+Central configuration for the Institutional Equity Research Agent.
+
+Responsibilities
+----------------
+- Store application constants
+- Store model configuration
+- Avoid hardcoded values across the project
+
+Used by
+--------
+config/llm.py
+planner.py
+future agents
+"""
+
+from __future__ import annotations
+
+# --------------------------------------------------------------------
+# LLM Configuration
+# --------------------------------------------------------------------
+
+GROQ_MODEL = "openai/gpt-oss-20b"
+
+LLM_TEMPERATURE = 0
+
+# --------------------------------------------------------------------
+# Planner Tasks
+# --------------------------------------------------------------------
+
+TASK_NEWS = "news"
+TASK_RAG = "rag"
+TASK_RATIO = "ratio"
+TASK_DCF = "dcf"
+TASK_REPORT = "report"
+TASK_UNKNOWN = "unknown"
+
+# --------------------------------------------------------------------
+# Search Configuration
+# --------------------------------------------------------------------
+
+MAX_NEWS_RESULTS = 10
