@@ -19,21 +19,35 @@ from state import GraphState
 
 from agents.planner import planner_node
 from agents.report import report_node
+from agents.news import news_node
 
-def build_graph():
+def route_after_planner(state:GraphState) ->str:
     """
-    Build and compile the LangGraph workflow.
-
-    Returns:
-        Compiled graph.
+    Decide the next node after planner
     """
-    builder = StateGraph(GraphState)
+    if state["task"] == "news":
+        return "news"
 
-    builder.add_node("planner", planner_node)
-    builder.add_node("report", report_node)
+    return "report"
 
-    builder.add_edge(START, "planner")
-    builder.add_edge("planner", "report")
-    builder.add_edge("report", END)
+builder = StateGraph(GraphState)
 
-    return builder.compile()
+builder.add_node("planner", planner_node)
+builder.add_node("news", news_node)
+builder.add_node("report", report_node)
+
+builder.add_edge(START, "planner")
+
+builder.add_conditional_edges(
+    "planner",
+    route_after_planner,
+    {
+        "news": "news",
+        "report": "report",
+    },
+)
+
+builder.add_edge("news", "report")
+builder.add_edge("report", END)
+
+graph = builder.compile()
