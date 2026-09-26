@@ -38,11 +38,8 @@ def news_node(state:GraphState) ->GraphState:
 
     news_text = search_company_news.invoke(company)
 
-    report = (
-        f"Latest news for {company}\n\n"
-        f"{news_text}"
-    )
+    
     return {
-        **state,
-        "final_report": report
-    }
+    **state,
+    "news": news_text,
+}

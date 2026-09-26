@@ -1,32 +1,44 @@
 """
 report.py
 
-Placeholder report node.
+Report generation node.
 
-Future phases will generate institutional investment reports.
+This node converts structured graph state into a user-facing report.
 """
+
 from __future__ import annotations
 
 from state import GraphState
 
-def report_node(state:GraphState)-> GraphState:
+
+def report_node(state: GraphState) -> GraphState:
     """
-    Create a temporary response.
+    Generate the final response.
 
     Args:
-        state: Current graph state.
+        state: Shared LangGraph state.
 
     Returns:
-        Updated graph state.
+        Updated state containing final_report.
     """
-    task = state["task"]
     company = state["company"]
+    task = state["task"]
+    news = state.get("news", "")
 
-    response = (
-        f"Planner routed company={company}, task={task}.",
-        "Specialist agents will be added in future phases.")
+    if task == "news":
+        report = f"""Latest News Report
+
+Company: {company}
+
+{news}
+"""
+    else:
+        report = (
+            f"Planner selected task: {task}\n"
+            f"Company: {company}"
+        )
 
     return {
         **state,
-        "Final_report":response
+        "final_report": report,
     }

@@ -38,4 +38,5 @@ class GraphState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     company: str
     task: str
+    news: str
     final_report: str

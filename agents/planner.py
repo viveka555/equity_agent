@@ -15,112 +15,41 @@ graph.py
 """
 from __future__ import annotations
 import logging
-import re
+
+from config.llm import llm
 
 from langchain_core.messages import HumanMessage
-from langgraph.graph import StateGraph
 
 from state import GraphState
-from config.settings import(
-    TASK_DCF,
-    TASK_NEWS,
-    TASK_RAG,
-    TASK_RATIO,
-    TASK_REPORT,
-    TASK_UNKNOWN
-)
+
+from models.planner_models import PlannerDecision
+
+# ---------------------------------------------------------------------
+# Planner System Prompt
+# ---------------------------------------------------------------------
+SYSTEM_PROMPT = """
+You are the Planner Agent for an Institutional Equity Research System.
+
+Your only responsibility is to determine:
+
+1. Company name
+2. Next workflow task
+
+Available tasks:
+- news   : Latest company news
+- rag    : Annual report or PDF questions
+- ratio  : Financial ratio analysis
+- dcf    : Intrinsic value / DCF valuation
+- report : Complete institutional equity research report
+- unknown: If the request does not match any workflow
+
+Return only the structured output defined by the schema.
+Do not answer the user's financial question.
+"""
 
 logger = logging.getLogger(__name__)
 
-COMPANIES = [
-    "tcs",
-    "infosys",
-    "bel",
-    "yes bank",
-    "ltf",
-    "eternal",
-    "max healthcare",
-]
 
-def extract_company(text:str) ->str:
-    """
-    Extract a known company name from user input.
-
-    Args:
-        text: User message.
-
-    Returns:
-        Company name if found, otherwise empty string.
-    """
-    text = text.lower()
-
-    for company in COMPANIES:
-        if company in text:
-            return company.title()
-
-    return ""
-
-def classify_task(text: str) -> str:
-    """
-    Classify the user's intent into a planner task.
-
-    Args:
-        text: User message.
-
-    Returns:
-        One of the predefined task names.
-    """
-    text = text.lower().strip()
-
-    # 1. DCF / Valuation (highest priority)
-    if any(keyword in text for keyword in [
-        "dcf",
-        "intrinsic value",
-        "fair value",
-        "valuation",
-        "discounted cash flow",
-    ]):
-        return TASK_DCF
-
-    # 2. News
-    if any(keyword in text for keyword in [
-        "news",
-        "latest",
-        "headline",
-        "announcement",
-    ]):
-        return TASK_NEWS
-
-    # 3. Annual report / RAG
-    if any(keyword in text for keyword in [
-        "annual report",
-        "10-k",
-        "10k",
-        "pdf",
-        "financial statement",
-    ]):
-        return TASK_RAG
-
-    # 4. Financial ratios
-    if any(keyword in text for keyword in [
-        "ratio",
-        "roe",
-        "roce",
-        "eps",
-        "debt",
-        "margin",
-    ]):
-        return TASK_RATIO
-
-    # 5. Full institutional analysis
-    if any(keyword in text for keyword in [
-        "analyze",
-        "analysis",
-        "full report",
-    ]):
-        return TASK_REPORT
-
-    return TASK_UNKNOWN
 
 def planner_node(state: GraphState) ->GraphState:
     """
@@ -135,22 +64,31 @@ def planner_node(state: GraphState) ->GraphState:
     Returns:
         Updated graph state.
     """
-    logger.info("Planner node started")
+    logger.info("Running LLM Planner")
 
-    last_messge = state["messages"][-1]  
+    last_message = state["messages"][-1]  
 
-    if not isinstance(last_messge, HumanMessage):
+    if not isinstance(last_message, HumanMessage):
         logger.warning("Last message was not Humanmessage")
         return state
 
-    company = extract_company(last_messge.content)
-    task = classify_task(last_messge.content)
+    # Create a structured-output version of the LLM
+    planner_llm = llm.with_structured_output(PlannerDecision)
 
-    logger.info("Company detected %s", company)
-    logger.info("Task dected %s", task)
+    #Invoke the LLM with system + user messages
+    decision = planner_llm.invoke(
+        [
+            ("system", SYSTEM_PROMPT),
+            ("human", last_message.content),
+        ]
+    )
+
+    logger.info("Company detected: %s", decision.company)
+    logger.info("Task detected: %s", decision.task)
+
 
     return {
         **state,
-        "Company": company,
-        "Task" : task
+        "company": decision.company,
+        "task" : decision.task
     }
