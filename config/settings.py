@@ -23,6 +23,7 @@ from __future__ import annotations
 # --------------------------------------------------------------------
 
 GROQ_MODEL = "openai/gpt-oss-20b"
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 LLM_TEMPERATURE = 0
 
