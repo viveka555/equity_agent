@@ -73,7 +73,14 @@ class FinancialInput(BaseModel):
     ebitda: float = Field(
         ...,
         ge=0,
-        description="Earnings before interest and taxes.",
+        description="Earnings before interest, taxes, depreciation "
+        "and amortization.",
+    )
+
+    ebit: float = Field(
+    ...,
+    ge=0,
+    description="Earnings before interest and taxes.",
     )
 
     net_profit: float = Field(
