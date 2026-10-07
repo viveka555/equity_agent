@@ -28,26 +28,12 @@ from agents.news import news_node
 from agents.planner import planner_node
 from agents.rag_agent import rag_node
 from agents.report import report_node
+from agents.ratio_agent import ratio_node
 from state import GraphState
 
 
 def route_after_planner(state: GraphState) -> str:
-    """
-    Decide which node should execute after the planner.
-
-    Args:
-        state: Shared LangGraph state.
-
-    Returns:
-        Name of the next node.
-    """
-    if state["task"] == "news":
-        return "news"
-
-    if state["task"] == "rag":
-        return "rag"
-
-    return "report"
+    return state["task"]
 
 
 def build_graph():
@@ -64,6 +50,7 @@ def build_graph():
     builder.add_node("news", news_node)
     builder.add_node("rag", rag_node)
     builder.add_node("report", report_node)
+    builder.add_node("ratio", ratio_node)
 
     # Start workflow with the planner.
     builder.add_edge(START, "planner")
@@ -76,6 +63,7 @@ def build_graph():
             "news": "news",
             "rag": "rag",
             "report": "report",
+            "ratio":"ratio"
         },
     )
 
@@ -88,4 +76,8 @@ def build_graph():
     # Report is the final node for report workflows.
     builder.add_edge("report", END)
 
+    # Ratio analysis is the final node for ratio workflows.
+    builder.add_edge("ratio", END)
+
+    
     return builder.compile()
