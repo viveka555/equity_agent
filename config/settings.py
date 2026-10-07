@@ -17,6 +17,7 @@ future agents
 """
 
 from __future__ import annotations
+from pathlib import Path
 
 # --------------------------------------------------------------------
 # LLM Configuration
@@ -43,3 +44,8 @@ TASK_UNKNOWN = "unknown"
 # --------------------------------------------------------------------
 
 MAX_NEWS_RESULTS = 10
+
+#--------------------------------------------------------------------
+# Persistent database location
+#--------------------------------------------------------------------
+CHROMA_PATH = Path("vector_db/chroma")

@@ -15,20 +15,20 @@ Current Workflow
 START
   ↓
 Planner
-  ↓
-News / Report
-  ↓
-END
+  ├── News → News Agent → Report → END
+  ├── RAG  → RAG Agent → END
+  └── Report → Report Agent → END
 """
 
 from __future__ import annotations
 
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 
-from state import GraphState
-from agents.planner import planner_node
 from agents.news import news_node
+from agents.planner import planner_node
+from agents.rag_agent import rag_node
 from agents.report import report_node
+from state import GraphState
 
 
 def route_after_planner(state: GraphState) -> str:
@@ -44,8 +44,9 @@ def route_after_planner(state: GraphState) -> str:
     if state["task"] == "news":
         return "news"
 
-    # For now every other task goes to report.
-    # Later we will add RAG, Ratio and DCF.
+    if state["task"] == "rag":
+        return "rag"
+
     return "report"
 
 
@@ -58,28 +59,33 @@ def build_graph():
     """
     builder = StateGraph(GraphState)
 
-    # -------------------------
-    # Register Nodes
-    # -------------------------
+    # Register graph nodes.
     builder.add_node("planner", planner_node)
     builder.add_node("news", news_node)
+    builder.add_node("rag", rag_node)
     builder.add_node("report", report_node)
 
-    # -------------------------
-    # Workflow
-    # -------------------------
+    # Start workflow with the planner.
     builder.add_edge(START, "planner")
 
+    # Route according to planner decision.
     builder.add_conditional_edges(
         "planner",
         route_after_planner,
         {
             "news": "news",
+            "rag": "rag",
             "report": "report",
         },
     )
 
+    # News continues through the report node.
     builder.add_edge("news", "report")
+
+    # RAG already produces the answer.
+    builder.add_edge("rag", END)
+
+    # Report is the final node for report workflows.
     builder.add_edge("report", END)
 
     return builder.compile()

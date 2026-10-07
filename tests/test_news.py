@@ -1,15 +1,39 @@
 """
-Unit tests for the News Agent.
+test_news.py
+
+Tests for the News Research Agent.
+
+Responsibilities
+----------------
+- Verify that the News Agent can execute successfully.
+- Verify that retrieved news is stored in graph state.
 """
 
-from models.planner_models import classify_task
+from langchain_core.messages import HumanMessage
+
+from agents.news import news_node
 
 
-def test_news_routing():
+def test_news_node() -> None:
     """
-    Verify planner correctly routes
-    news-related questions.
+    Verify that the News Agent retrieves company news
+    and stores it in the graph state.
+
+    Raises:
+        AssertionError: If the news result is empty.
     """
-    assert classify_task(
-        "Latest news of BEL"
-    ) == "news"
+    state = {
+        "messages": [
+            HumanMessage(content="What is the latest news about BEL?")
+        ],
+        "company": "BEL",
+        "task": "news",
+        "news": "",
+        "final_report": "",
+    }
+
+    updated_state = news_node(state)
+
+    assert updated_state["news"].strip(), (
+        "News Agent returned an empty news result."
+    )

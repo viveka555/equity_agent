@@ -5,32 +5,36 @@ News Research Agent.
 
 Responsibilities
 ----------------
-- Fetch recent company news
-- Summarize events
-- Store structured results in graph state
+- Fetch recent company news.
+- Store the retrieved news in the shared LangGraph state.
 
 Used by
 --------
 graph.py
 """
+
 from __future__ import annotations
 
 import logging
 
-from tools.web_tools import search_company_news
 from state import GraphState
+from tools.web_tools import search_company_news
 
 logger = logging.getLogger(__name__)
 
-def news_node(state:GraphState) ->GraphState:
+
+def news_node(state: GraphState) -> GraphState:
     """
     Execute the News Research Agent.
 
     Args:
-        state: Shared LangGraph state.
+        state: Shared LangGraph state containing the company name.
 
     Returns:
-        Updated state containing news summary.
+        Updated graph state containing the retrieved news.
+
+    Raises:
+        KeyError: If the company is missing from the graph state.
     """
     company = state["company"]
 
@@ -38,8 +42,7 @@ def news_node(state:GraphState) ->GraphState:
 
     news_text = search_company_news.invoke(company)
 
-    
     return {
-    **state,
-    "news": news_text,
-}
+        **state,
+        "news": news_text,
+    }
