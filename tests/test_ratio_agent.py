@@ -7,7 +7,7 @@ The external web-search tool is mocked so the test remains
 independent of network availability.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from langchain_core.messages import HumanMessage
 
@@ -31,25 +31,19 @@ def test_news_node() -> None:
         "final_report": "",
     }
 
-    # Create a mock replacement for the complete LangChain tool.
-    mock_search_tool = MagicMock()
-
-    # Configure the mocked tool's invoke() method.
-    mock_search_tool.invoke.return_value = (
-        "BEL reported strong quarterly results."
-    )
-
-    # Replace the complete StructuredTool object.
     with patch(
         "agents.news.search_company_news",
-        mock_search_tool,
-    ):
+        autospec=True,
+    ) as mock_search:
+
+        mock_search.invoke.return_value = (
+            "BEL reported strong quarterly results."
+        )
+
         updated_state = news_node(state)
 
-    # Verify the tool was called with the expected company.
-    mock_search_tool.invoke.assert_called_once_with("BEL")
+    mock_search.invoke.assert_called_once_with("BEL")
 
-    # Verify the News Agent stored the result in graph state.
     assert updated_state["news"] == (
         "BEL reported strong quarterly results."
     )
