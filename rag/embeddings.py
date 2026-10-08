@@ -20,9 +20,18 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from langchain_huggingface import HuggingFaceEmbeddings
-
 from config.settings import EMBEDDING_MODEL
+
+
+def _create_embedding_model() -> HuggingFaceEmbeddings:
+    """Create the configured CPU embedding model on first use."""
+    from langchain_huggingface import HuggingFaceEmbeddings
+
+    return HuggingFaceEmbeddings(
+        model_name=EMBEDDING_MODEL,
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True},
+    )
 
 
 @lru_cache(maxsize=1)
@@ -36,9 +45,5 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
     Returns:
         Configured HuggingFace embedding model.
     """
-    return HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
-    )
+    return _create_embedding_model()
 

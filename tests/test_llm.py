@@ -1,9 +1,25 @@
-"""
-Simple connectivity test for Groq.
-"""
+"""Optional live connectivity check for the Groq LLM."""
 
-from config.llm import llm
+from __future__ import annotations
 
-response = llm.invoke("Say hello in one sentence.")
+import os
 
-print(response.content)
+import pytest
+
+
+def test_groq_connectivity() -> None:
+    """Check Groq only when the explicit integration-test flag is enabled.
+
+    Live API checks are opt-in so normal pytest collection does not make
+    network calls or incur API usage.
+    """
+    if os.getenv("RUN_LLM_INTEGRATION") != "1":
+        pytest.skip(
+            "Set RUN_LLM_INTEGRATION=1 to run the live Groq check."
+        )
+
+    from config.llm import llm
+
+    response = llm.invoke("Say hello in one sentence.")
+
+    assert response.content.strip()

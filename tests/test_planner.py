@@ -11,7 +11,9 @@ Responsibilities
 """
 
 from langchain_core.messages import HumanMessage
+from unittest.mock import MagicMock, patch
 
+from models.planner_models import PlannerDecision
 from agents.planner import planner_node
 
 
@@ -33,7 +35,17 @@ def test_planner_node() -> None:
         "final_report": "",
     }
 
-    updated_state = planner_node(state)
+    mock_structured_llm = MagicMock()
+    mock_structured_llm.invoke.return_value = PlannerDecision(
+        company="BEL",
+        task="news",
+    )
+    with patch("agents.planner.llm") as mock_llm:
+        mock_llm.with_structured_output.return_value = mock_structured_llm
+        updated_state = planner_node(state)
+
+    mock_llm.with_structured_output.assert_called_once_with(PlannerDecision)
+    mock_structured_llm.invoke.assert_called_once()
 
     assert updated_state["company"].upper() == "BEL"
     assert updated_state["task"] == "news"

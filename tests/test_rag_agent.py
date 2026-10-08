@@ -11,6 +11,7 @@ Responsibilities
 """
 
 from langchain_core.messages import HumanMessage
+from unittest.mock import patch
 
 from agents.rag_agent import rag_node
 
@@ -37,7 +38,15 @@ def test_rag_node() -> None:
         "final_report": "",
     }
 
-    updated_state = rag_node(state)
+    with patch(
+        "agents.rag_agent.answer_question",
+        return_value="The annual report lists risks to monitor.",
+    ) as mock_answer:
+        updated_state = rag_node(state)
+
+    mock_answer.assert_called_once_with(
+        "What are the major risks faced by Bharat Electronics?"
+    )
 
     assert updated_state["final_report"].strip(), (
         "RAG agent did not produce an answer."

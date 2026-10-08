@@ -25,3 +25,6 @@ Thumbs.db
 
 #chroma db
 vector_db/
+data/conversations.sqlite3
+data/conversations.sqlite3-shm
+data/conversations.sqlite3-wal

@@ -9,6 +9,8 @@ Responsibilities
 - Verify the complete RAG pipeline can answer a question.
 """
 
+from unittest.mock import MagicMock, patch
+
 from langchain_core.documents import Document
 
 from rag.rag_chain import build_context, answer_question
@@ -43,7 +45,7 @@ def test_answer_question() -> None:
     """
     Verify that the complete RAG pipeline generates an answer.
 
-    This test uses the actual ChromaDB vector store and Groq LLM.
+    Retrieval and the LLM are mocked to keep the test local and repeatable.
 
     Raises:
         AssertionError: If the RAG pipeline does not return
@@ -51,9 +53,19 @@ def test_answer_question() -> None:
     """
     question = "What are the major risks faced by Bharat Electronics?"
 
-    answer = answer_question(
-        question=question,
-        k=5,
+    document = Document(
+        page_content="The annual report describes the major company risks.",
+        metadata={"source": "BEL_2025.pdf", "page": 25},
     )
+    mock_llm = MagicMock()
+    mock_llm.invoke.return_value.content = "The report lists key risks."
+    with (
+        patch("rag.rag_chain.retrieve_documents", return_value=[document])
+        as mock_retrieve,
+        patch("rag.rag_chain.llm", mock_llm),
+    ):
+        answer = answer_question(question=question, k=5)
 
+    mock_retrieve.assert_called_once_with(query=question, k=5)
     assert answer.strip(), "RAG chain returned an empty answer."
+    assert answer == "The report lists key risks."

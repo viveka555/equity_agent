@@ -50,3 +50,10 @@ MAX_NEWS_RESULTS = 10
 # Persistent database location
 #--------------------------------------------------------------------
 CHROMA_PATH = Path("vector_db/chroma")
+
+# --------------------------------------------------------------------
+# Laptop-local conversation memory
+# --------------------------------------------------------------------
+
+MEMORY_DB_PATH = Path("data/conversations.sqlite3")
+MEMORY_MAX_MESSAGES = 20

@@ -1,53 +1,55 @@
-"""
-test_vector_store.py
+"""Tests for local persistence and deterministic IDs in Chroma."""
 
-Tests for the ChromaDB vector store.
+from pathlib import Path
 
-Responsibilities
-----------------
-- Load the BEL annual report.
-- Split the report into chunks.
-- Build the Chroma vector store.
-- Verify documents were successfully stored.
+from langchain_core.documents import Document
 
-Tests
------
-- test_build_vector_store
-"""
-
-from rag.chunker import split_documents
-from rag.pdf_loader import load_pdf
 from rag.vector_store import build_vector_store
 
 
-PDF_PATH = "data/annual_reports/BEL_2025.pdf"
+class _FakeEmbeddings:
+    """Small deterministic vectors for offline Chroma tests."""
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """Return one fixed-size vector for each document."""
+        return [[float(len(text)), 1.0, 0.0] for text in texts]
+
+    def embed_query(self, text: str) -> list[float]:
+        """Return a fixed-size vector for a query."""
+        return [float(len(text)), 1.0, 0.0]
 
 
-def test_build_vector_store() -> None:
-    """
-    Verify that annual-report chunks can be stored in ChromaDB.
+def test_build_vector_store(tmp_path: Path, monkeypatch) -> None:
+    """Verify documents persist locally without downloading an embedding model."""
+    documents = [
+        Document(
+            page_content="Annual report risk disclosures.",
+            metadata={"source": "BEL_2025.pdf", "page": 25},
+        ),
+        Document(
+            page_content="Annual report revenue discussion.",
+            metadata={"source": "BEL_2025.pdf", "page": 26},
+        ),
+    ]
+    monkeypatch.setattr("rag.vector_store.CHROMA_PATH", tmp_path / "chroma")
+    monkeypatch.setattr(
+        "rag.vector_store.get_embedding_model",
+        _FakeEmbeddings,
+    )
 
-    The test loads the BEL annual report, creates chunks, builds
-    the persistent vector store, and verifies that Chroma contains
-    the expected number of documents.
-
-    Raises:
-        AssertionError: If the vector store does not contain
-            the expected documents.
-    """
-    documents = load_pdf(PDF_PATH)
-
-    chunks = split_documents(documents)
-
-    assert chunks, "Document chunking returned no chunks."
-
-    vector_store = build_vector_store(chunks)
-
+    vector_store = build_vector_store(documents)
     stored_documents = vector_store.get()
 
-    assert stored_documents["ids"], "ChromaDB contains no document IDs."
+    assert len(stored_documents["ids"]) == len(documents)
+    assert stored_documents["metadatas"] == [
+        {"source": "BEL_2025.pdf", "page": 25},
+        {"source": "BEL_2025.pdf", "page": 26},
+    ]
 
-    assert len(stored_documents["ids"]) == len(chunks), (
-        "Number of documents stored in ChromaDB does not match "
-        "the number of chunks."
-    )
+
+def test_build_vector_store_rejects_empty_documents() -> None:
+    """Verify empty document lists are rejected before opening Chroma."""
+    import pytest
+
+    with pytest.raises(ValueError, match="empty documents"):
+        build_vector_store([])

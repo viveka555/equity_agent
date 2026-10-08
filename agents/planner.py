@@ -32,8 +32,9 @@ You are the Planner Agent for an Institutional Equity Research System.
 
 Your only responsibility is to determine:
 
-1. Company name
-2. Next workflow task
+1. Company name, using recent conversation context when the latest
+   message refers to a company indirectly
+2. Next workflow task, based primarily on the latest user message
 
 Available tasks:
 - news   : Latest company news
@@ -68,7 +69,8 @@ def planner_node(state: GraphState) ->GraphState:
     """
     logger.info("Running LLM Planner")
 
-    last_message = state["messages"][-1]  
+    messages = state["messages"]
+    last_message = messages[-1]
 
     if not isinstance(last_message, HumanMessage):
         logger.warning("Last message was not Humanmessage")
@@ -77,11 +79,12 @@ def planner_node(state: GraphState) ->GraphState:
     # Create a structured-output version of the LLM
     planner_llm = llm.with_structured_output(PlannerDecision)
 
-    #Invoke the LLM with system + user messages
+    # Include bounded conversation history so follow-up questions can
+    # retain their company context.
     decision = planner_llm.invoke(
         [
             ("system", SYSTEM_PROMPT),
-            ("human", last_message.content),
+            *messages,
         ]
     )
 
