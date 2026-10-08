@@ -25,6 +25,13 @@ def test_route_after_planner_ratio() -> None:
     assert route_after_planner(state) == "ratio"
 
 
+def test_route_after_planner_dcf() -> None:
+    """Verify that a DCF task is routed to the DCF Agent."""
+    state = {"task": "dcf"}
+
+    assert route_after_planner(state) == "dcf"
+
+
 def test_build_graph() -> None:
     """
     Verify that the complete LangGraph workflow compiles successfully.
