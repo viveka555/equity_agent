@@ -46,6 +46,12 @@ class GraphState(TypedDict):
         Optional WACC and terminal-growth scenario lists.
     dcf_analysis:
         Structured DCF outputs produced by the DCF Agent.
+    financial_data:
+        Optional normalized financial data available to specialist agents.
+    ratio_analysis:
+        Optional financial ratio analysis.
+    risk_analysis:
+        Structured company risk assessment produced by the Risk Agent.
     """
     messages: Annotated[list[BaseMessage], add_messages]
     company: str
@@ -57,3 +63,6 @@ class GraphState(TypedDict):
     dcf_wacc_inputs: NotRequired[dict[str, float]]
     dcf_sensitivity_inputs: NotRequired[dict[str, list[float]]]
     dcf_analysis: NotRequired[dict[str, Any]]
+    financial_data: NotRequired[dict[str, Any]]
+    ratio_analysis: NotRequired[dict[str, Any]]
+    risk_analysis: NotRequired[dict[str, Any]]

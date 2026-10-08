@@ -32,6 +32,13 @@ def test_route_after_planner_dcf() -> None:
     assert route_after_planner(state) == "dcf"
 
 
+def test_route_after_planner_risk() -> None:
+    """Verify that a risk task is routed to the Risk Analysis Agent."""
+    state = {"task": "risk"}
+
+    assert route_after_planner(state) == "risk"
+
+
 def test_build_graph() -> None:
     """
     Verify that the complete LangGraph workflow compiles successfully.

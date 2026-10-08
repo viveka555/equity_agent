@@ -40,6 +40,8 @@ Available tasks:
 - rag    : Annual report or PDF questions
 - ratio  : Financial ratio analysis
 - dcf    : Intrinsic value / DCF valuation
+- risk   : Company risk analysis using supplied financial, valuation,
+           and news evidence
 - report : Complete institutional equity research report
 - unknown: If the request does not match any workflow
 

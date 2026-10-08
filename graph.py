@@ -30,6 +30,7 @@ from agents.rag_agent import rag_node
 from agents.report import report_node
 from agents.ratio_agent import ratio_node
 from agents.dcf_agent import dcf_node
+from agents.risk_agent import risk_node
 from state import GraphState
 
 
@@ -53,6 +54,7 @@ def build_graph():
     builder.add_node("report", report_node)
     builder.add_node("ratio", ratio_node)
     builder.add_node("dcf", dcf_node)
+    builder.add_node("risk", risk_node)
 
     # Start workflow with the planner.
     builder.add_edge(START, "planner")
@@ -67,6 +69,7 @@ def build_graph():
             "report": "report",
             "ratio": "ratio",
             "dcf": "dcf",
+            "risk": "risk",
         },
     )
 
@@ -84,6 +87,9 @@ def build_graph():
 
     # DCF analysis is the final node for valuation workflows.
     builder.add_edge("dcf", END)
+
+    # Risk analysis is the final node for risk workflows.
+    builder.add_edge("risk", END)
 
     
     return builder.compile()

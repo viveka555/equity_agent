@@ -40,6 +40,7 @@ class PlannerDecision(BaseModel):
         "rag",
         "ratio",
         "dcf",
+        "risk",
         "report",
         "unknown"
     ] =Field(

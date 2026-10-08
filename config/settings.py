@@ -36,6 +36,7 @@ TASK_NEWS = "news"
 TASK_RAG = "rag"
 TASK_RATIO = "ratio"
 TASK_DCF = "dcf"
+TASK_RISK = "risk"
 TASK_REPORT = "report"
 TASK_UNKNOWN = "unknown"
 
