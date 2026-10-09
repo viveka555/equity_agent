@@ -72,3 +72,36 @@ def test_invoke_with_memory_supplies_history_and_saves_turn(
         "What are the risks?",
         "Follow-up answer",
     ]
+
+
+def test_invoke_with_memory_passes_local_research_inputs() -> None:
+    """Verify optional local research inputs reach each graph invocation."""
+    graph = MagicMock()
+    graph.invoke.return_value = {"final_report": "Research report"}
+
+    invoke_with_memory(
+        graph=graph,
+        user_message="Write a report.",
+        conversation_id="local",
+        memory=MagicMock(),
+        research_inputs={"ratio_analysis": {"revenue_growth": 8.0}},
+    )
+
+    assert graph.invoke.call_args.args[0]["ratio_analysis"] == {
+        "revenue_growth": 8.0
+    }
+
+
+def test_invoke_with_memory_rejects_unsupported_research_keys() -> None:
+    """Keep local input files from overriding planner-controlled state."""
+    graph = MagicMock()
+    memory = MagicMock()
+
+    with pytest.raises(ValueError, match="Unsupported research input keys"):
+        invoke_with_memory(
+            graph=graph,
+            user_message="Write a report.",
+            conversation_id="local",
+            memory=memory,
+            research_inputs={"task": "report"},
+        )

@@ -1,6 +1,7 @@
 # Virtual Environment
 myvenv/
 .venv/
+.pip-tmp/
 
 # Python
 __pycache__/
@@ -28,3 +29,4 @@ vector_db/
 data/conversations.sqlite3
 data/conversations.sqlite3-shm
 data/conversations.sqlite3-wal
+data/research_inputs.json

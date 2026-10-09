@@ -39,6 +39,13 @@ def test_route_after_planner_risk() -> None:
     assert route_after_planner(state) == "risk"
 
 
+def test_route_after_planner_report() -> None:
+    """Verify a full-report request is routed to the report node."""
+    state = {"task": "report"}
+
+    assert route_after_planner(state) == "report"
+
+
 def test_build_graph() -> None:
     """
     Verify that the complete LangGraph workflow compiles successfully.

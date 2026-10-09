@@ -51,3 +51,7 @@ def test_rag_node() -> None:
     assert updated_state["final_report"].strip(), (
         "RAG agent did not produce an answer."
     )
+    assert updated_state["annual_report_analysis"] == {
+        "question": "What are the major risks faced by Bharat Electronics?",
+        "answer": "The annual report lists risks to monitor.",
+    }

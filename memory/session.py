@@ -6,12 +6,28 @@ Memory-aware graph invocation for multi-turn local conversations.
 
 from __future__ import annotations
 
-from typing import Protocol
+from collections.abc import Mapping
+from typing import Any, Protocol
 
 from langchain_core.messages import HumanMessage
 
 from memory.conversation_store import ConversationMemory
 from state import GraphState
+
+RESEARCH_INPUT_KEYS = frozenset(
+    {
+        "news",
+        "annual_report_analysis",
+        "financial_data",
+        "ratio_analysis",
+        "dcf_analysis",
+        "risk_analysis",
+        "dcf_forecast_input",
+        "dcf_assumptions",
+        "dcf_wacc_inputs",
+        "dcf_sensitivity_inputs",
+    }
+)
 
 
 class GraphInvoker(Protocol):
@@ -27,6 +43,7 @@ def invoke_with_memory(
     user_message: str,
     conversation_id: str,
     memory: ConversationMemory | None = None,
+    research_inputs: Mapping[str, Any] | None = None,
 ) -> GraphState:
     """Invoke the graph with local history and persist the completed turn.
 
@@ -36,13 +53,15 @@ def invoke_with_memory(
         conversation_id: Stable ID used to resume this conversation later.
         memory: Optional SQLite store; the laptop-local default is used
             when omitted.
+        research_inputs: Optional local evidence and specialist inputs to
+            merge into each graph invocation.
 
     Returns:
         Final graph state for the current turn.
 
     Raises:
         ValueError: If user input, conversation ID, or graph response is
-            empty.
+            empty, or research inputs contain unsupported state keys.
     """
     if not user_message.strip():
         raise ValueError("user_message cannot be empty.")
@@ -56,6 +75,14 @@ def invoke_with_memory(
         "news": "",
         "final_report": "",
     }
+    if research_inputs:
+        unsupported_keys = set(research_inputs) - RESEARCH_INPUT_KEYS
+        if unsupported_keys:
+            raise ValueError(
+                "Unsupported research input keys: "
+                + ", ".join(sorted(unsupported_keys))
+            )
+        state.update(research_inputs)  # type: ignore[typeddict-item]
 
     result = graph.invoke(state)
     final_report = result.get("final_report", "")

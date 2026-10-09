@@ -55,5 +55,9 @@ def rag_node(state:GraphState) -> GraphState:
 
     return {
         **state,
-        "final_report":answer,
+        "annual_report_analysis": {
+            "question": question,
+            "answer": answer,
+        },
+        "final_report": answer,
     }

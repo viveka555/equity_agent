@@ -52,6 +52,10 @@ class GraphState(TypedDict):
         Optional financial ratio analysis.
     risk_analysis:
         Structured company risk assessment produced by the Risk Agent.
+    annual_report_analysis:
+        Answer and question produced by the annual-report RAG workflow.
+    institutional_report:
+        Validated sectioned report produced by the report generator.
     """
     messages: Annotated[list[BaseMessage], add_messages]
     company: str
@@ -66,3 +70,5 @@ class GraphState(TypedDict):
     financial_data: NotRequired[dict[str, Any]]
     ratio_analysis: NotRequired[dict[str, Any]]
     risk_analysis: NotRequired[dict[str, Any]]
+    annual_report_analysis: NotRequired[dict[str, str]]
+    institutional_report: NotRequired[dict[str, Any]]
