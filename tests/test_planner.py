@@ -49,3 +49,25 @@ def test_planner_node() -> None:
 
     assert updated_state["company"].upper() == "BEL"
     assert updated_state["task"] == "news"
+
+
+def test_planner_routes_share_price_forecast_to_unknown() -> None:
+    """Do not misroute a share-price prediction request into DCF."""
+    state = {
+        "messages": [HumanMessage(content="give me price forcast for SBI")],
+        "company": "",
+        "task": "",
+        "news": "",
+        "final_report": "",
+    }
+    structured_llm = MagicMock()
+    structured_llm.invoke.return_value = PlannerDecision(
+        company="SBI",
+        task="dcf",
+    )
+
+    with patch("agents.planner.llm") as mock_llm:
+        mock_llm.with_structured_output.return_value = structured_llm
+        updated_state = planner_node(state)
+
+    assert updated_state["task"] == "unknown"

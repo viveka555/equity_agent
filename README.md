@@ -33,7 +33,7 @@ fabricating analysis.
 - A Groq API key for LLM-backed planner, RAG, risk, and report workflows
 - Internet access for Groq requests, company news search, and first-time
   downloads of the local embedding model
-- An annual-report PDF in `rag/annual_reports/` for annual-report RAG
+- An annual-report PDF for annual-report RAG
 
 The application and conversation database run on the laptop. Chroma data,
 SQLite history, and downloaded model files are local. Groq inference and web
@@ -45,7 +45,7 @@ Open PowerShell in the project folder:
 
 ```powershell
 cd C:\Users\USER\Desktop\equity_agent
-py -3.12 -m venv .venv
+py -3.14 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
@@ -59,6 +59,18 @@ for your user according to your normal Windows setup.
 
 On macOS or Linux, create and activate a virtual environment with `python3`
 and install the same `requirements.txt`.
+
+## Load an annual report
+
+Place a searchable annual-report PDF anywhere in the project, then ingest it
+into the local vector store. For example:
+
+```powershell
+python ingest_report.py data/annual_reports/BEL_2025.pdf
+```
+
+The first ingestion downloads the configured embedding model. After ingestion,
+ask the app a question about the report and it will retrieve supporting pages.
 
 ## Run the app
 
@@ -76,7 +88,8 @@ Type `exit` or `quit` to close the app.
 The planner recognizes `news`, `rag`, `ratio`, `dcf`, `risk`, and `report`.
 Ratio and DCF calculations expect structured financial inputs in graph state;
 the current interactive app does not connect to a market-data API. Annual
-report questions require a PDF to be ingested into the local RAG store.
+report questions require a PDF to be ingested into the local RAG store with
+`ingest_report.py`.
 
 For a full report, the report node accepts these evidence keys in graph state:
 
@@ -103,7 +116,7 @@ requires those source outputs to be collected first.
 
 - `data/conversations.sqlite3`: local conversation history (ignored by Git)
 - `vector_db/`: local Chroma database (ignored by Git)
-- `rag/annual_reports/`: PDFs supplied for annual-report research
+- `data/annual_reports/`: PDFs supplied for annual-report research
 - `data/research_inputs.json`: optional local research inputs (ignored by Git)
 - `.env`: local API credentials (ignored by Git)
 

@@ -10,6 +10,10 @@ Responsibilities
 - Verify that the Ratio Agent is registered in the graph.
 """
 
+from unittest.mock import patch
+
+from langchain_core.messages import HumanMessage
+
 from graph import build_graph, route_after_planner
 
 
@@ -44,6 +48,25 @@ def test_route_after_planner_report() -> None:
     state = {"task": "report"}
 
     assert route_after_planner(state) == "report"
+
+
+def test_unknown_task_returns_explanation_instead_of_route_error() -> None:
+    """Verify unknown tasks reach the user-facing fallback response."""
+    state = {
+        "messages": [
+            HumanMessage(content="give me price forcast for SBI")
+        ],
+        "company": "SBI",
+        "task": "",
+        "news": "",
+        "final_report": "",
+    }
+    planned_state = {**state, "task": "unknown"}
+
+    with patch("graph.planner_node", return_value=planned_state):
+        result = build_graph().invoke(state)
+
+    assert "can't provide a share-price forecast" in result["final_report"]
 
 
 def test_build_graph() -> None:

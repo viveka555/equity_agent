@@ -40,11 +40,15 @@ Available tasks:
 - news   : Latest company news
 - rag    : Annual report or PDF questions
 - ratio  : Financial ratio analysis
-- dcf    : Intrinsic value / DCF valuation
+- dcf    : Intrinsic value / DCF valuation using financial assumptions
 - risk   : Company risk analysis using supplied financial, valuation,
            and news evidence
 - report : Complete institutional equity research report
-- unknown: If the request does not match any workflow
+- unknown: Share-price forecasts or requests that do not match another workflow
+
+DCF calculates an intrinsic valuation from supplied financial inputs. It
+does not predict a future share price. Classify requests for share-price
+forecasts or price predictions as unknown.
 
 Return only the structured output defined by the schema.
 Do not answer the user's financial question.
@@ -52,6 +56,22 @@ Do not answer the user's financial question.
 
 logger = logging.getLogger(__name__)
 
+
+def _is_share_price_forecast_request(question: str) -> bool:
+    """Identify unsupported requests to predict a future share price.
+
+    Args:
+        question: Latest user message.
+
+    Returns:
+        Whether the question combines a price reference with forecast language.
+    """
+    normalized_question = question.casefold()
+    asks_for_prediction = any(
+        term in normalized_question
+        for term in ("forecast", "forcast", "predict", "prediction")
+    )
+    return "price" in normalized_question and asks_for_prediction
 
 
 def planner_node(state: GraphState) ->GraphState:
@@ -88,12 +108,20 @@ def planner_node(state: GraphState) ->GraphState:
         ]
     )
 
+    question = last_message.content
+    task = decision.task
+    if isinstance(question, str) and _is_share_price_forecast_request(question):
+        task = "unknown"
+        logger.info(
+            "Share-price forecasting is unsupported; returning an explanation."
+        )
+
     logger.info("Company detected: %s", decision.company)
-    logger.info("Task detected: %s", decision.task)
+    logger.info("Task detected: %s", task)
 
 
     return {
         **state,
         "company": decision.company,
-        "task" : decision.task
+        "task": task,
     }

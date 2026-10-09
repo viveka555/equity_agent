@@ -7,6 +7,7 @@ Run the Institutional Equity Research Agent with laptop-local memory.
 import json
 import logging
 from pathlib import Path
+import sys
 from typing import Any
 
 from config.logging_config import setup_logging
@@ -20,6 +21,7 @@ setup_logging()
 
 def main() -> None:
     """Run an interactive session with local memory and optional evidence."""
+    _configure_console_encoding()
     graph = build_graph()
     conversation_id = input(
         "Conversation ID [local]: "
@@ -34,13 +36,31 @@ def main() -> None:
         if not user_message:
             continue
 
-        result = invoke_with_memory(
-            graph=graph,
-            user_message=user_message,
-            conversation_id=conversation_id,
-            research_inputs=research_inputs,
-        )
+        try:
+            result = invoke_with_memory(
+                graph=graph,
+                user_message=user_message,
+                conversation_id=conversation_id,
+                research_inputs=research_inputs,
+            )
+        except Exception as exc:
+            logger.error(
+                "Request failed for conversation %s: %s",
+                conversation_id,
+                exc,
+            )
+            print(f"\nAgent:\nI couldn't complete this request: {exc}")
+            continue
+
         print(f"\nAgent:\n{result['final_report']}")
+
+
+def _configure_console_encoding() -> None:
+    """Use UTF-8 console output so report punctuation cannot crash the app."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
 
 
 def _load_research_inputs() -> dict[str, Any] | None:

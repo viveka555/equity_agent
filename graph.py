@@ -17,7 +17,8 @@ START
 Planner
   ├── News → News Agent → Report → END
   ├── RAG  → RAG Agent → END
-  └── Report → Report Agent → END
+  ├── Report → Report Agent → END
+  └── Unknown → Report Agent → END with an unsupported-task explanation
 """
 
 from __future__ import annotations
@@ -35,6 +36,7 @@ from state import GraphState
 
 
 def route_after_planner(state: GraphState) -> str:
+    """Return the planner's task as the conditional graph route."""
     return state["task"]
 
 
@@ -70,6 +72,7 @@ def build_graph():
             "ratio": "ratio",
             "dcf": "dcf",
             "risk": "risk",
+            "unknown": "report",
         },
     )
 

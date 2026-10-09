@@ -261,6 +261,33 @@ def report_node(state: GraphState) -> GraphState:
             f"Latest News Report\n\nCompany: {company}\n\n"
             f"{state.get('news', '')}"
         )
+    elif task == "unknown":
+        question = _user_question(state).lower()
+        asks_for_price_prediction = (
+            "price" in question
+            and any(
+                term in question
+                for term in ("forecast", "forcast", "predict", "prediction")
+            )
+        ) or "price target" in question
+        if asks_for_price_prediction:
+            final_report = (
+                f"I can't provide a share-price forecast for {company} yet. "
+                "This project has no live share-price history feed or price-"
+                "forecasting model. Its DCF workflow estimates intrinsic value "
+                "from supplied financial inputs and assumptions; it is not a "
+                "short-term stock-price prediction.\n\n"
+                "Available workflows include company news, annual-report "
+                "questions, ratio analysis, DCF valuation, risk analysis, and "
+                "evidence-based research reports."
+            )
+        else:
+            final_report = (
+                f"I couldn't match that request to a supported workflow for "
+                f"{company}. Available workflows include company news, "
+                "annual-report questions, ratio analysis, DCF valuation, risk "
+                "analysis, and evidence-based research reports."
+            )
     else:
         final_report = (
             f"Planner selected task: {task}\nCompany: {company}"
